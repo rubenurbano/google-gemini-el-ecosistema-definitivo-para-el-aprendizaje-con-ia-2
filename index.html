@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Gemini · Ecosistema Definitivo para el Aprendizaje con IA</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0e1a; --card:#0f172a; --border:#1e3a5f;
+    --cyan:#00d4ff; --green:#22c55e; --amber:#f59e0b;
+    --red:#ef4444; --purple:#a855f7;
+    --txt:#e2e8f0; --muted:#94a3b8;
+  }
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    line-height:1.65; min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- PROGRESS BAR ---------- */
+  #progress{
+    position:fixed; top:0; left:0; height:3px; width:0%;
+    background:linear-gradient(90deg,var(--cyan),var(--purple));
+    z-index:1000; transition:width .1s ease-out;
+    box-shadow:0 0 10px rgba(0,212,255,.6);
+  }
+  /* ---------- NAVBAR ---------- */
+  nav{
+    position:fixed; top:3px; left:0; right:0; z-index:999;
+    background:rgba(10,14,26,.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    padding:0 8px;
+  }
+  .nav-inner{
+    display:flex; gap:4px; overflow-x:auto; padding:8px 4px;
+    scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+  }
+  .nav-inner::-webkit-scrollbar{height:5px}
+  .nav-inner::-webkit-scrollbar-thumb{background:var(--border); border-radius:3px}
+  .nav-btn{
+    flex:0 0 auto; padding:8px 14px; border-radius:8px;
+    background:transparent; border:1px solid transparent;
+    color:var(--muted); font-size:.82rem; font-weight:600;
+    cursor:pointer; white-space:nowrap; transition:all .2s;
+    font-family:inherit;
+  }
+  .nav-btn:hover{color:var(--cyan); border-color:var(--border); background:rgba(0,212,255,.06)}
+  .nav-btn.active{
+    color:var(--cyan); border-color:var(--cyan);
+    background:rgba(0,212,255,.12);
+    box-shadow:0 0 12px rgba(0,212,255,.25);
+  }
+  .nav-btn.credits{color:var(--purple); border-color:rgba(168,85,247,.3)}
+  .nav-btn.credits.active{color:#fff; background:rgba(168,85,247,.25); border-color:var(--purple)}
+  .nav-btn.exercises{color:var(--green); border-color:rgba(34,197,94,.3)}
+  .nav-btn.exercises.active{color:#fff; background:rgba(34,197,94,.22); border-color:var(--green)}
+
+  /* ---------- LAYOUT ---------- */
+  main{
+    max-width:1180px; margin:0 auto; padding:70px 14px 40px;
+  }
+  .section{display:none; animation:fade .4s ease}
+  .section.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- HERO SVG ---------- */
+  .hero-wrap{
+    width:100%; border-radius:14px; overflow:hidden;
+    border:1px solid var(--border);
+    box-shadow:0 0 40px rgba(0,212,255,.15), 0 0 80px rgba(168,85,247,.08);
+    margin-bottom:24px; background:#070b14;
+    position:relative;
+  }
+  .hero-wrap svg{display:block; width:100%; height:auto; aspect-ratio:16/9}
+
+  /* ---------- HOME ---------- */
+  .badge{
+    display:inline-block; padding:5px 14px; border-radius:20px;
+    font-size:.72rem; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:16px;
+    border:1px solid var(--cyan); color:var(--cyan);
+    background:rgba(0,212,255,.08);
+  }
+  .home-title{
+    font-size:clamp(1.6rem,4.2vw,2.6rem); font-weight:800;
+    line-height:1.15; margin-bottom:14px;
+    background:linear-gradient(120deg,#fff,#00d4ff 60%,#a855f7);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .home-sub{
+    font-size:clamp(.95rem,2.4vw,1.15rem); color:var(--muted);
+    margin-bottom:22px; max-width:760px;
+  }
+  .home-desc{
+    color:var(--txt); font-size:.98rem; margin-bottom:24px;
+    max-width:900px;
+  }
+  .quote{
+    border-left:3px solid var(--cyan); padding:14px 18px;
+    background:rgba(0,212,255,.05); border-radius:0 10px 10px 0;
+    font-style:italic; color:#cbd5e1; margin-bottom:24px;
+    font-size:.95rem;
+  }
+  .metrics{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px; margin-bottom:24px;
+  }
+  .metric{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:14px; text-align:center;
+  }
+  .metric .num{
+    font-size:1.4rem; font-weight:800; color:var(--cyan);
+    display:block; margin-bottom:2px;
+  }
+  .metric .lbl{font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.5px}
+  .meta-strip{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;
+  }
+  .chip{
+    padding:5px 12px; border-radius:20px; font-size:.75rem;
+    background:var(--card); border:1px solid var(--border); color:var(--muted);
+  }
+  .chip b{color:var(--cyan)}
+
+  /* ---------- CARDS ---------- */
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:22px; margin-bottom:18px;
+  }
+  .card h2{
+    font-size:1.35rem; color:var(--cyan); margin-bottom:14px;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding-bottom:10px; border-bottom:1px solid var(--border);
+  }
+  .card h3{
+    font-size:1.08rem; color:var(--purple); margin:18px 0 10px;
+  }
+  .card h4{
+    font-size:.95rem; color:var(--amber); margin:14px 0 8px;
+  }
+  .icon{
+    display:inline-flex; width:30px; height:30px; border-radius:8px;
+    align-items:center; justify-content:center; font-size:1rem;
+    background:rgba(0,212,255,.12); border:1px solid rgba(0,212,255,.3);
+    flex-shrink:0;
+  }
+  .card p{margin-bottom:10px; color:#cbd5e1}
+  .card ul,.card ol{margin:8px 0 12px 22px; color:#cbd5e1}
+  .card li{margin-bottom:6px}
+  .card strong{color:#fff}
+
+  /* ---------- CALLOUTS ---------- */
+  .callout{
+    border-radius:10px; padding:14px 16px; margin:14px 0;
+    border-left:4px solid; font-size:.92rem;
+  }
+  .callout.info{border-color:var(--cyan); background:rgba(0,212,255,.07)}
+  .callout.example{border-color:var(--green); background:rgba(34,197,94,.07)}
+  .callout.warn{border-color:var(--amber); background:rgba(245,158,11,.08)}
+  .callout.error{border-color:var(--red); background:rgba(239,68,68,.08)}
+  .callout .label{
+    font-weight:700; font-size:.72rem; letter-spacing:1px;
+    text-transform:uppercase; display:block; margin-bottom:5px;
+  }
+  .callout.info .label{color:var(--cyan)}
+  .callout.example .label{color:var(--green)}
+  .callout.warn .label{color:var(--amber)}
+  .callout.error .label{color:var(--red)}
+
+  /* ---------- STEPS ---------- */
+  .step{
+    display:flex; gap:12px; padding:12px 0;
+    border-bottom:1px dashed var(--border);
+  }
+  .step:last-child{border-bottom:none}
+  .step .n{
+    flex:0 0 32px; height:32px; border-radius:50%;
+    background:linear-gradient(135deg,var(--cyan),var(--purple));
+    color:#04121c; font-weight:800; font-size:.85rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step .body{flex:1}
+  .step .body b{color:#fff; display:block; margin-bottom:3px; font-size:.95rem}
+  .step .body span{color:var(--muted); font-size:.87rem}
+
+  /* ---------- TABLES ---------- */
+  .tbl-wrap{overflow-x:auto; border-radius:10px; border:1px solid var(--border); margin:14px 0}
+  table{width:100%; border-collapse:collapse; font-size:.87rem; min-width:480px}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--border)}
+  th{background:rgba(0,212,255,.08); color:var(--cyan); font-weight:700; font-size:.78rem; text-transform:uppercase; letter-spacing:.5px}
+  tr:last-child td{border-bottom:none}
+  td{color:#cbd5e1}
+  tr:hover td{background:rgba(0,212,255,.03)}
+
+  /* ---------- PROMPT BLOCK ---------- */
+  .prompt{
+    background:#060a12; border:1px solid var(--border); border-left:3px solid var(--green);
+    border-radius:8px; padding:14px; margin:12px 0;
+    font-family:'Consolas','Monaco',monospace; font-size:.83rem;
+    color:#a5f3fc; overflow-x:auto; white-space:pre-wrap; word-break:break-word;
+    position:relative;
+  }
+  .prompt::before{
+    content:"PROMPT"; position:absolute; top:-9px; left:12px;
+    background:var(--green); color:#04121c; font-size:.62rem;
+    font-weight:800; letter-spacing:1.5px; padding:2px 8px; border-radius:4px;
+    font-family:'Segoe UI',sans-serif;
+  }
+  .prompt-tag{
+    display:inline-block; font-size:.7rem; color:var(--green);
+    font-weight:700; letter-spacing:1px; margin-bottom:6px;
+  }
+
+  /* ---------- BOTÓN COPIAR PROMPTS ---------- */
+  .prompt-copy{
+    position:absolute; top:10px; right:10px;
+    padding:6px 10px; border-radius:6px;
+    border:1px solid rgba(34,197,94,.55);
+    background:rgba(34,197,94,.12); color:var(--green);
+    font-family:'Segoe UI',system-ui,sans-serif;
+    font-size:.72rem; font-weight:700;
+    cursor:pointer; z-index:2;
+    transition:all .2s ease;
+    white-space:nowrap;
+  }
+  .prompt-copy:hover{
+    background:rgba(34,197,94,.22);
+    border-color:var(--green);
+    transform:translateY(-1px);
+  }
+  .prompt-copy:active{transform:translateY(0)}
+  .prompt-copy.copied{
+    color:#fff; background:rgba(34,197,94,.3);
+    border-color:var(--green);
+  }
+  .prompt.has-copy{padding-top:42px}
+  @media (max-width:640px){
+    .prompt-copy{top:8px; right:8px; padding:5px 8px; font-size:.68rem}
+    .prompt.has-copy{padding-top:40px}
+  }
+
+  /* ---------- CHECKLIST ---------- */
+  .checklist{list-style:none; margin:12px 0!important; padding:0!important}
+  .checklist li{
+    display:flex; gap:10px; padding:9px 12px; margin-bottom:6px;
+    background:rgba(0,212,255,.04); border-radius:8px; border:1px solid var(--border);
+    font-size:.88rem; align-items:flex-start;
+  }
+  .checklist li::before{
+    content:"☐"; color:var(--cyan); font-size:1.05rem; flex-shrink:0; line-height:1.3;
+  }
+
+  /* ---------- COMPARATIVE CARDS ---------- */
+  .cmp-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px; margin:14px 0;
+  }
+  .cmp-card{
+    border-radius:10px; padding:14px; border:1px solid var(--border);
+    background:var(--card);
+  }
+  .cmp-card.good{border-color:rgba(34,197,94,.4); background:rgba(34,197,94,.05)}
+  .cmp-card.bad{border-color:rgba(239,68,68,.4); background:rgba(239,68,68,.05)}
+  .cmp-card .head{
+    font-weight:800; font-size:.78rem; letter-spacing:1px;
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .cmp-card.good .head{color:var(--green)}
+  .cmp-card.bad .head{color:var(--red)}
+
+  /* ---------- CONCEPT CARDS ---------- */
+  .concept-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:12px; margin:14px 0;
+  }
+  .concept{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:14px;
+  }
+  .concept b{color:var(--cyan); display:block; margin-bottom:5px; font-size:.92rem}
+  .concept span{color:var(--muted); font-size:.84rem}
+
+  /* ---------- ACCORDION ---------- */
+  details{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; margin-bottom:10px; overflow:hidden;
+  }
+  summary{
+    padding:14px 16px; cursor:pointer; font-weight:600; color:var(--cyan);
+    list-style:none; display:flex; justify-content:space-between; align-items:center;
+    font-size:.92rem; user-select:none;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::after{
+    content:"+"; font-size:1.3rem; color:var(--muted);
+    transition:transform .2s; line-height:1;
+  }
+  details[open] summary::after{transform:rotate(45deg); color:var(--cyan)}
+  details > div{padding:0 16px 16px; color:#cbd5e1; font-size:.88rem}
+
+  /* ---------- BACK TO TOP ---------- */
+  #toTop{
+    position:fixed; bottom:22px; right:22px; z-index:998;
+    width:46px; height:46px; border-radius:50%;
+    background:linear-gradient(135deg,var(--cyan),var(--purple));
+    border:none; color:#04121c; font-size:1.3rem; font-weight:900;
+    cursor:pointer; display:none; align-items:center; justify-content:center;
+    box-shadow:0 4px 20px rgba(0,212,255,.4);
+    transition:transform .2s;
+  }
+  #toTop:hover{transform:translateY(-3px) scale(1.05)}
+  #toTop.show{display:flex}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--border);
+    padding:24px 14px; text-align:center; color:var(--muted);
+    font-size:.82rem; margin-top:20px;
+  }
+  footer div{margin-bottom:5px}
+  footer .latin{color:var(--purple); font-style:italic; margin-top:10px}
+
+  /* ---------- CREDITS ---------- */
+  .credits-hero{margin-bottom:24px}
+  .credits-info{text-align:center; padding:20px}
+  .credits-info h2{
+    font-size:1.5rem; color:var(--cyan); margin-bottom:10px;
+    border-bottom:none; padding-bottom:0; display:block;
+  }
+  .credits-info .name{
+    font-size:1.2rem; font-weight:700; color:#fff; margin:14px 0;
+    letter-spacing:.5px;
+  }
+  .credits-info .edu{
+    color:var(--muted); font-size:.88rem; margin:14px auto; max-width:520px;
+  }
+  .credits-info .latin-big{
+    color:var(--purple); font-style:italic; font-size:1.05rem;
+    margin-top:20px; padding-top:16px; border-top:1px solid var(--border);
+  }
+  .credits-dates{
+    display:inline-flex; gap:16px; flex-wrap:wrap; justify-content:center;
+    margin:12px 0;
+  }
+  .credits-dates span{
+    background:var(--card); border:1px solid var(--border);
+    padding:8px 16px; border-radius:20px; font-size:.85rem;
+  }
+  .credits-dates b{color:var(--cyan)}
+
+  /* ---------- SOURCES ---------- */
+  .source-item{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:16px; margin-bottom:12px;
+  }
+  .source-item b{color:var(--cyan); display:block; margin-bottom:6px; font-size:.95rem}
+  .source-item a{
+    color:var(--green); text-decoration:none; word-break:break-all;
+    font-size:.82rem;
+  }
+  .source-item a:hover{text-decoration:underline}
+
+  /* ---------- EXERCISES ---------- */
+  .ex-header{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border);
+  }
+  .ex-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:40px; height:40px; border-radius:10px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--cyan),var(--purple));
+    color:#04121c; font-weight:900; font-size:1.05rem;
+  }
+  .ex-title{
+    font-size:1.05rem; font-weight:700; color:#fff; flex:1; min-width:180px;
+  }
+  .ex-meta{
+    display:flex; gap:6px; flex-wrap:wrap;
+  }
+  .ex-tag{
+    font-size:.68rem; font-weight:700; letter-spacing:.8px;
+    text-transform:uppercase; padding:4px 10px; border-radius:14px;
+    border:1px solid var(--border); background:rgba(0,0,0,.2);
+    color:var(--muted);
+  }
+  .ex-tag.basic{color:var(--green); border-color:rgba(34,197,94,.5); background:rgba(34,197,94,.08)}
+  .ex-tag.inter{color:var(--amber); border-color:rgba(245,158,11,.5); background:rgba(245,158,11,.08)}
+  .ex-tag.adv{color:var(--red); border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.08)}
+  .ex-tag.type{color:var(--cyan); border-color:rgba(0,212,255,.4); background:rgba(0,212,255,.07)}
+
+  .ex-enunciado{
+    background:rgba(0,212,255,.05); border-left:3px solid var(--cyan);
+    border-radius:0 8px 8px 0; padding:12px 14px; margin:12px 0;
+    font-size:.9rem; color:#e2e8f0;
+  }
+  .ex-enunciado b{color:#fff}
+  .ex-options{
+    list-style:none; margin:10px 0 0 0 !important; padding:0 !important;
+  }
+  .ex-options li{
+    padding:6px 10px; margin-bottom:4px; border-radius:6px;
+    background:rgba(255,255,255,.02); border:1px solid var(--border);
+    font-size:.86rem; color:#cbd5e1;
+  }
+
+  .ex-block{
+    margin:10px 0; padding:12px 14px; border-radius:8px;
+    font-size:.87rem; border:1px solid var(--border);
+    background:rgba(0,0,0,.15);
+  }
+  .ex-block .label{
+    font-size:.7rem; font-weight:800; letter-spacing:1px;
+    text-transform:uppercase; display:block; margin-bottom:6px;
+  }
+  .ex-block.why{border-left:3px solid var(--purple)}
+  .ex-block.why .label{color:var(--purple)}
+  .ex-block.err{border-left:3px solid var(--red); background:rgba(239,68,68,.05)}
+  .ex-block.err .label{color:var(--red)}
+  .ex-block.qa{border-left:3px solid var(--green); background:rgba(34,197,94,.05)}
+  .ex-block.qa .label{color:var(--green)}
+
+  .ex-flow{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:8px; margin:12px 0;
+  }
+  .ex-flow-item{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:10px; text-align:center; font-size:.78rem;
+    color:var(--muted);
+  }
+  .ex-flow-item b{color:var(--cyan); display:block; font-size:.85rem; margin-bottom:3px}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:640px){
+    main{padding:64px 10px 30px}
+    .card{padding:16px}
+    .card h2{font-size:1.15rem}
+    .card h3{font-size:1rem}
+    .nav-btn{padding:7px 11px; font-size:.76rem}
+    .metric .num{font-size:1.15rem}
+    .step .n{flex:0 0 28px; height:28px; font-size:.78rem}
+    #toTop{width:42px; height:42px; bottom:16px; right:16px}
+    .hero-wrap{border-radius:10px}
+    .ex-num{width:34px; height:34px; font-size:.95rem}
+    .ex-title{font-size:.95rem}
+  }
+  @media (max-width:360px){
+    .nav-btn{padding:6px 9px; font-size:.7rem}
+    .home-title{font-size:1.35rem}
+  }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav>
+  <div class="nav-inner" id="navInner">
+    <button class="nav-btn active" data-target="home">Inicio</button>
+    <button class="nav-btn" data-target="intro">Introducción</button>
+    <button class="nav-btn" data-target="cap1">Cap 1 · Gemini Live</button>
+    <button class="nav-btn" data-target="cap2">Cap 2 · @openstax</button>
+    <button class="nav-btn" data-target="cap3">Cap 3 · Stitch</button>
+    <button class="nav-btn" data-target="cap4">Cap 4 · Simulaciones</button>
+    <button class="nav-btn" data-target="cap5">Cap 5 · NotebookLM</button>
+    <button class="nav-btn" data-target="cierre">Cierre</button>
+    <button class="nav-btn" data-target="prompts">Prompts</button>
+    <button class="nav-btn exercises" data-target="ejercicios">Ejercicios</button>
+    <button class="nav-btn" data-target="fuentes">Fuentes</button>
+    <button class="nav-btn credits" data-target="creditos">Créditos</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ============ HOME ============ -->
+  <section id="home" class="section active">
+
+    <!-- SVG ANIMADO (clonado también en CRÉDITOS) -->
+    <div class="hero-wrap" id="heroHome"></div>
+
+    <span class="badge">Tutorial Interactivo · IA Educativa</span>
+    <h1 class="home-title">Google Gemini: El Ecosistema Definitivo para el Aprendizaje con IA</h1>
+    <p class="home-sub">De buscador tradicional a tutor personal multimodal, interactivo y gratuito disponible 24/7 en cualquier dispositivo.</p>
+
+    <p class="home-desc">Este tutorial recorre el ecosistema completo de Google Gemini: <b>Gemini Live</b>, <b>Google AI Studio</b>, el comando académico <b>@openstax</b>, <b>Google Stitch</b>, simulaciones interactivas del buscador, y <b>NotebookLM</b> para gestionar documentos masivos. Cada capítulo incluye pasos numerados, casos reales, errores frecuentes y prompts listos para usar.</p>
+
+    <div class="quote">"Si no puedes explicarlo de forma sencilla, es que no lo entiendes lo suficientemente bien."</div>
+
+    <div class="metrics">
+      <div class="metric"><span class="num">5</span><span class="lbl">Capítulos</span></div>
+      <div class="metric"><span class="num">4</span><span class="lbl">Prompts Clave</span></div>
+      <div class="metric"><span class="num">10</span><span class="lbl">Ejercicios</span></div>
+      <div class="metric"><span class="num">100%</span><span class="lbl">Gratuito</span></div>
+    </div>
+
+    <div class="meta-strip">
+      <span class="chip">📅 Fecha: <b>24/09/2026</b></span>
+      <span class="chip">🕒 Hora: <b>16:36:16</b></span>
+      <span class="chip">👨‍💻 <b>Rubén Sbarsky</b></span>
+    </div>
+
+  </section>
+
+  <!-- ============ INTRODUCCIÓN ============ -->
+  <section id="intro" class="section">
+    <div class="card">
+      <h2><span class="icon">🎯</span> ¿Qué es el Ecosistema Google Gemini y para qué sirve?</h2>
+      <p>Google ha evolucionado radicalmente de ser un buscador tradicional que solo entrega listas de enlaces a convertirse en un <b>ecosistema educativo integral</b>. Su objetivo fundamental no es solo almacenar información, sino <b>transformar los datos brutos en una comprensión profunda que nunca se olvide</b>.</p>
+      <p>A través de modelos avanzados como <b>Gemini 1.5 Live</b> y <b>Gemini 3.8 Live</b>, este ecosistema actúa como un <b>tutor personal, interactivo y gratuito</b>, disponible en cualquier dispositivo las 24 horas del día.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">⚡</span> ¿Por qué es crucial aprender a utilizarlo hoy?</h2>
+      <div class="step"><div class="n">1</div><div class="body"><b>Paso de la memorización al entendimiento práctico</b><span>Ya no necesitas buscar decenas de tutoriales estáticos; la inteligencia artificial analiza tu contexto exacto en tiempo real.</span></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><b>Personalización absoluta e inmediatez</b><span>Permite adaptar cualquier tema (desde idiomas hasta física cuántica o legislación) a tu nivel académico actual: primaria, secundaria o profesional.</span></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><b>Acceso gratuito a herramientas de nivel universitario</b><span>Ofrece capacidades que antes requerían suscripciones costosas o tutorías privadas.</span></div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🌍</span> Situaciones reales donde se utiliza</h2>
+      <div class="concept-grid">
+        <div class="concept"><b>🖥️ Asistencia técnica en vivo</b><span>Resolver dudas en programas de diseño como Fotopía/Photopea mientras compartes la pantalla.</span></div>
+        <div class="concept"><b>🗣️ Estudio de idiomas</b><span>Practicar la pronunciación y traducción directa de cuadernos de trabajo en alemán o francés.</span></div>
+        <div class="concept"><b>📜 Preparación de oposiciones</b><span>Analizar documentos jurídicos de más de 1.000 páginas, como la Constitución Española.</span></div>
+        <div class="concept"><b>🔬 Creación de herramientas educativas</b><span>Desarrollar aplicaciones dinámicas para enseñar conceptos científicos como el ciclo del agua.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CAP 1 ============ -->
+  <section id="cap1" class="section">
+    <div class="card">
+      <h2><span class="icon">📡</span> Capítulo 1 · Fundamentos y Primeros Pasos con Gemini Live</h2>
+
+      <h3>1.1 ¿Qué es Gemini Live y cómo funciona?</h3>
+      <p>Gemini Live es la tecnología de conversación en tiempo real de Google que te permite mantener <b>llamadas fluidas con la IA</b> mediante voz, cámara de vídeo y pantalla compartida.</p>
+
+      <div class="callout info">
+        <span class="label">Analogía sencilla</span>
+        Imagina tener a un profesor experto sentado a tu lado, mirando tu pantalla o tu libreta y guiándote paso a paso en voz alta.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">⚙️</span> 1.2 Paso a Paso: Configurar Gemini Live en Google AI Studio</h2>
+      <div class="step"><div class="n">1</div><div class="body"><b>Acceder a la plataforma</b><span>Abre tu navegador e ingresa a la página oficial de Google AI Studio.</span><em style="color:var(--green);font-style:normal;font-size:.82rem">Motivo: es el entorno oficial gratuito donde puedes probar los modelos más recientes antes de su despliegue generalizado.</em></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><b>Seleccionar el modelo adecuado</b><span>Dirígete al menú superior derecho, haz clic en la categoría <b>Live</b> y selecciona <b>Gemini 3.8 Live</b>.</span><em style="color:var(--green);font-style:normal;font-size:.82rem">Motivo: este modelo ofrece la menor latencia y la mayor naturalidad en conversaciones por voz.</em></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><b>Elegir la modalidad de interacción</b><span>Selecciona entre llamada por voz pura, acceso a webcam o compartir pantalla en tiempo real.</span><em style="color:var(--green);font-style:normal;font-size:.82rem">Motivo: compartir pantalla permite que la IA actúe como un tutor visual.</em></div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🧪</span> 1.3 Casos Prácticos de Aplicación Real</h2>
+
+      <h4>Caso Práctico A · Tutoría en vivo para Software (Fotopía / Photopea)</h4>
+      <ul>
+        <li><b>Acción:</b> Abres Fotopía para convertir una foto a blanco y negro. Compartes pantalla con Gemini Live.</li>
+        <li><b>Diálogo interactivo:</b> Le preguntas dónde hacer clic. La IA te indica ir al menú superior <code style="color:var(--cyan)">Image &gt; Adjustments &gt; Black &amp; White</code>.</li>
+        <li><b>Ajuste fino:</b> Te explica el motivo de cada deslizador de color para ajustar tonos rojos o verdes.</li>
+      </ul>
+
+      <h4>Caso Práctico B · Aprendizaje de Idiomas (Cuaderno de Alemán)</h4>
+      <ul>
+        <li><b>Acción:</b> Muestras un PDF con ejercicios en alemán.</li>
+        <li><b>Interacción:</b> Lees la frase <code style="color:var(--cyan)">"beschraibe erkläre"</code> y la IA te corrige amablemente la pronunciación al instante.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">⚖️</span> 1.4 Cuadro Comparativo: Correcto vs. Incorrecto</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Aspecto</th><th>Forma Incorrecta ❌</th><th>Forma Correcta ✅</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Petición de ayuda</b></td><td>"Explícame cómo editar esta foto en este programa".</td><td>Compartir pantalla en vivo y preguntar: "¿En qué menú exacto debo hacer clic ahora?".</td></tr>
+            <tr><td><b>Práctica de idioma</b></td><td>Pedirle que traduzca un texto largo de forma pasiva.</td><td>Leer tú mismo el texto en voz alta y pedirle que evalúe y corrija tu pronunciación.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">⚠️</span> 1.5 Errores Comunes y Buenas Prácticas</h2>
+      <div class="callout error"><span class="label">Error común</span>Dejar el micrófono abierto con ruido de fondo, lo que dificulta la comprensión de la IA.</div>
+      <div class="callout warn"><span class="label">Consejo profesional</span>Usa auriculares con micrófono para garantizar una captura de voz limpia durante las llamadas en directo.</div>
+
+      <h3>Resumen del Capítulo 1</h3>
+      <p>Gemini Live en Google AI Studio permite la <b>interacción multimodal</b> mediante voz, cámara y pantalla compartida, ofreciendo un asistente en tiempo real para resolver tareas técnicas o estudiar idiomas.</p>
+    </div>
+  </section>
+
+  <!-- ============ CAP 2 ============ -->
+  <section id="cap2" class="section">
+    <div class="card">
+      <h2><span class="icon">🔎</span> Capítulo 2 · Búsqueda Profunda y el Comando Secreto @openstax</h2>
+
+      <h3>2.1 La Función de Investigación Profunda (Deep Research)</h3>
+      <p>Permite a la IA realizar <b>búsquedas analíticas exhaustivas</b> sobre temas complejos y compilar la información en documentos estructurados. Por ejemplo, al investigar el sueño profundo, recopila las fases, cambios de temperatura y actividad cerebral automáticamente.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🔐</span> 2.2 El Comando Secreto @openstax: Rigor Académico Garantizado</h2>
+      <p>Google ha integrado un acceso directo a la iniciativa <b>OpenStax</b> de la Universidad Rice (Houston), la cual publica libros de texto universitarios de acceso libre.</p>
+      <div class="callout info"><span class="label">¿Para qué sirve?</span>Al escribir <b>@openstax</b> en tu chat de Gemini, obligas a la IA a fundamentar todas sus respuestas exclusivamente en libros universitarios revisados por pares, citando referencias exactas.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📋</span> 2.3 Paso a Paso: Estudio Riguroso con @openstax</h2>
+      <div class="step"><div class="n">1</div><div class="body"><b>Escribir la mención</b><span>En la barra de mensaje de Gemini, escribe <b>@openstax</b> seguido de tu consulta.</span></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><b>Solicitar el tema y la autoevaluación</b><span>Pide la explicación de un tema (ejemplo: las fases del sueño) junto con un cuestionario interactivo.</span></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><b>Responder el test interactivo</b><span>Responde las preguntas que te formula la IA.</span></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><b>Revisar la calificación y fortalezas</b><span>Examina el desglose de aciertos (ej. 2 de 5) y las recomendaciones sobre qué áreas debes reforzar.</span></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><b>Verificar los enlaces a las fuentes</b><span>Consulta la bibliografía universitaria suministrada.</span></div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🚧</span> 2.4 Error Frecuente al Consultar Enlaces de Fuentes</h2>
+      <div class="callout error"><span class="label">Error frecuente</span>Solicitar enlaces directos a OpenStax en español puede generar respuestas donde la IA afirme no poder extraer la URL.</div>
+      <div class="callout warn"><span class="label">Solución profesional</span>Haz la petición de las fuentes o los enlaces directos utilizando el <b>idioma inglés</b>, lo que desplegará de inmediato las secciones exactas del libro universitario.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">💬</span> 2.5 Prompts Destacados de este Capítulo</h2>
+      <div class="prompt-tag">PROMPT 1 · Investigación Académica con OpenStax</div>
+      <div class="prompt">@openstax Explícame detalladamente las fases del sueño y qué le ocurre a la actividad cerebral en cada una. Al finalizar, hazme un cuestionario interactivo de 5 preguntas para evaluar lo aprendido y muéstrame mi puntuación con explicaciones.</div>
+
+      <h3>Resumen del Capítulo 2</h3>
+      <p>El comando <b>@openstax</b> conecta a Gemini con fuentes académicas universitarias de la Universidad Rice, permitiendo estudiar con material riguroso, responder cuestionarios interactivos y consultar citas bibliográficas precisas.</p>
+    </div>
+  </section>
+
+  <!-- ============ CAP 3 ============ -->
+  <section id="cap3" class="section">
+    <div class="card">
+      <h2><span class="icon">🎨</span> Capítulo 3 · Creación de Aplicaciones Educativas con Google Stitch y AI Studio</h2>
+
+      <h3>3.1 ¿Qué es Google Stitch y para qué sirve?</h3>
+      <p>Google Stitch es una plataforma que permite <b>diseñar aplicaciones web interactivas</b> y material didáctico a medida utilizando <b>lenguaje natural y asistencia por voz</b>.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">💧</span> 3.2 Paso a Paso: Crear una Mini-App del Ciclo del Agua</h2>
+      <div class="step"><div class="n">1</div><div class="body"><b>Iniciar sesión en Google Stitch</b><span>Selecciona el modelo <b>Gemini 3.8</b> en la pestaña correspondiente.</span></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><b>Iniciar llamada con el tutor IA</b><span>Configura el rol de la IA como un tutor docente.</span></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><b>Definir el objetivo educativo</b><span>Pide la creación de una aplicación interactiva sobre el ciclo del agua con esquemas visuales, experimentos y glosarios.</span></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><b>Exportar a Google AI Studio</b><span>Selecciona la opción <code style="color:var(--cyan)">Export &gt; Build with Google AI Studio</code>.</span></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><b>Ejecutar el Prompt de Construcción</b><span>Aplica el código HTML e integra las capacidades conversacionales para que un profesor virtual responda dudas dentro de la app.</span></div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">💬</span> 3.3 Prompts Destacados de este Capítulo</h2>
+      <div class="prompt-tag">PROMPT 2 · Construcción de la App Didáctica en AI Studio</div>
+      <div class="prompt">Actúa como un desarrollador web experto y docente. Toma este diseño de interfaz y código HTML del ciclo del agua y conviértelo en una aplicación web interactiva completamente funcional. Integra un modo de profesor por voz que pueda responder preguntas en tiempo real sobre cada etapa (evaporación, condensación, precipitación) adaptado al nivel seleccionado.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">✅</span> 3.4 Lista de Comprobación de Calidad para Mini-Apps Didácticas</h2>
+      <ul class="checklist">
+        <li>¿Los botones de etapas (evaporación, condensación, precipitación) cambian el contenido visual e informativo al hacer clic?</li>
+        <li>¿Incluye un glosario científico de términos clave?</li>
+        <li>¿Cuenta con un módulo de test interactivo para evaluar al estudiante?</li>
+        <li>¿El profesor de IA responde correctamente preguntas en una sola frase cuando se le pide concisión?</li>
+      </ul>
+
+      <h3>Resumen del Capítulo 3</h3>
+      <p>Con Google Stitch y Google AI Studio es posible pasar de una <b>idea hablada</b> a una <b>aplicación educativa interactiva completa</b> con tutor de voz integrado, test y laboratorios virtuales.</p>
+    </div>
+  </section>
+
+  <!-- ============ CAP 4 ============ -->
+  <section id="cap4" class="section">
+    <div class="card">
+      <h2><span class="icon">🧬</span> Capítulo 4 · Simulaciones Interactivas y Widgets Didácticos en el Buscador y Móvil</h2>
+      <h3>4.1 Búsqueda Inteligente e Interactiva en Google</h3>
+      <p>El buscador de Google incorpora un modo de IA capaz de <b>programar mini-aplicaciones y widgets didácticos</b> ejecutables directamente desde la pantalla de resultados.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🧪</span> 4.2 Casos Prácticos de Simulaciones</h2>
+
+      <h4>Simulación 1 · Escala de pH Interactiva</h4>
+      <ul>
+        <li><b>Descripción:</b> Un widget interactivo donde el usuario ajusta el nivel de pH (de 1 a 14) o selecciona sustancias (jugo de limón, naranja, café, agua pura, lejía) para comprobar su acidez o alcalinidad.</li>
+        <li><b>Modo prueba:</b> Permite clasificar sustancias y recibir calificación instantánea.</li>
+      </ul>
+
+      <h4>Simulación 2 · El Problema de los Tres Cuerpos en Física</h4>
+      <ul>
+        <li><b>Descripción:</b> Una simulación espacial en 3D que permite modificar la masa, posición y velocidad de tres cuerpos celestes para observar cómo cambia el equilibrio gravitatorio en tiempo real.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">💬</span> 4.3 Prompts Destacados de este Capítulo</h2>
+      <div class="prompt-tag">PROMPT 3 · Widget de Escala de pH en el Buscador</div>
+      <div class="prompt">Crea una escala de pH interactiva que muestre sustancias cotidianas como jugo de limón, jugo de naranja, café, agua pura y lejía. Permíteme interactuar modificando los valores de pH y poner a prueba mis conocimientos como un científico.</div>
+
+      <div class="prompt-tag" style="margin-top:16px">PROMPT 4 · Simulación del Problema de los Tres Cuerpos</div>
+      <div class="prompt">Crea una simulación interactiva del problema de los tres cuerpos en el espacio donde pueda modificar la masa, la posición y la velocidad de cada uno de los tres cuerpos, permitiendo cambiar entre la vista 3D y la vista pitagórica.</div>
+
+      <h3>Resumen del Capítulo 4</h3>
+      <p>El buscador de Google permite generar <b>simulaciones científicas inmediatas</b> (pH, física) para manipular variables y aprender de forma práctica en lugar de leer texto estático.</p>
+    </div>
+  </section>
+
+  <!-- ============ CAP 5 ============ -->
+  <section id="cap5" class="section">
+    <div class="card">
+      <h2><span class="icon">📚</span> Capítulo 5 · NotebookLM y Gemini Notebooks</h2>
+      <h3>5.1 Análisis de Documentos Extensos con NotebookLM</h3>
+      <p>NotebookLM permite procesar <b>archivos extensos</b>, como la Constitución Española de más de 1.000 páginas, garantizando que todas las respuestas estén <b>100% fundamentadas en el documento subido</b>.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🛠️</span> 5.2 Paso a Paso: Generar un Reporte Interactivo Completo</h2>
+      <div class="step"><div class="n">1</div><div class="body"><b>Cargar la fuente</b><span>Arrastra el archivo PDF masivo a la sección de fuentes de NotebookLM.</span></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><b>Crear el Reporte Interactivo</b><span>Haz clic en el botón de informe interactivo de aprendizaje.</span></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><b>Añadir Infografías Personalizadas</b><span>Selecciona la opción de infografía y escoge un estilo visual (ejemplo: estilo <i>Clay</i> / arcilla).</span></div></div>
+      <div class="step"><div class="n">4</div><div class="body"><b>Generar Recursos Múltiples</b><span>Activa la generación de <i>Flashcards</i>, Mapas Mentales interactivos y Podcasts resúmenes en un solo clic.</span></div></div>
+      <div class="step"><div class="n">5</div><div class="body"><b>Crear un Vídeo Explicativo Vertical (Video Overview)</b><span>Selecciona la opción de vídeo explicativo, elige el idioma español y genera un vídeo animado ideal para repasar conceptos en móvil.</span></div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🎓</span> 5.3 Módulo Especial: Gemini Notebooks y "Estudiar y Aprender"</h2>
+      <p>En la sección de Notebooks en Gemini, puedes seleccionar la opción <b>Estudiar y aprender</b>. La IA te entrevistará sobre tu objetivo (ejemplo: aprender japonés básico para un viaje en dos semanas), diseñará un plan prioritario, te evaluará con cuestionarios y <b>actualizará tus fortalezas y debilidades dinámicamente</b>.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🧠</span> 5.4 Trucos Profesionales e Inmersivos</h2>
+      <div class="concept-grid">
+        <div class="concept"><b>🌐 Acceso a funciones anticipadas mediante VPN</b><span>Usando herramientas como NordVPN conectadas a servidores de Estados Unidos, se pueden desbloquear funciones avanzadas de Gemas personalizadas y automatizaciones antes de su lanzamiento global.</span></div>
+        <div class="concept"><b>🪐 Vistas Inmersivas 3D</b><span>Mediante URLs de desarrollo, Gemini ofrece exploraciones inmersivas de conceptos como la era mesozoica o las capas del suelo, permitiendo hacer zoom desde un asteroide o muestra de tierra hasta la estructura molecular.</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📊</span> 5.5 Tabla Comparativa de Herramientas del Ecosistema</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Herramienta</th><th>Función Principal</th><th>Formato de Salida</th><th>Nivel de Interacción</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b style="color:var(--cyan)">Google AI Studio</b></td><td>Prototipado y llamadas en vivo con Gemini 3.8 Live.</td><td>Voz, vídeo, código y texto.</td><td>Muy Alto (Tiempo real).</td></tr>
+            <tr><td><b style="color:var(--green)">NotebookLM</b></td><td>Análisis de documentos propios y fuentes masivas.</td><td>Reportes, Podcasts, Vídeos verticales, Flashcards.</td><td>Alto.</td></tr>
+            <tr><td><b style="color:var(--purple)">Google Stitch</b></td><td>Generación de aplicaciones didácticas interactivas.</td><td>Aplicaciones web (HTML/JS).</td><td>Muy Alto.</td></tr>
+            <tr><td><b style="color:var(--amber)">Buscador Google (IA)</b></td><td>Búsqueda inteligente con widgets bajo demanda.</td><td>Simuladores e infografías interactivas.</td><td>Medio / Alto.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Resumen del Capítulo 5</h3>
+      <p>NotebookLM transforma fuentes masivas en <b>kits completos de estudio</b> con vídeos explicativos, mapas mentales e infografías, mientras que Gemini Notebooks personaliza planes de estudio paso a paso.</p>
+    </div>
+  </section>
+
+  <!-- ============ CIERRE ============ -->
+  <section id="cierre" class="section">
+    <div class="card">
+      <h2><span class="icon">🏁</span> Resumen de Todo lo Aprendido</h2>
+      <p>En este tutorial hemos aprendido a transformar el proceso de estudio utilizando el ecosistema de Google Gemini. Aprendimos a mantener <b>llamadas por voz y pantalla compartida</b> para resolver dudas técnicas, a fundamentar nuestras investigaciones con literatura universitaria mediante <b>@openstax</b>, a construir aplicaciones didácticas con <b>Google Stitch</b>, a interactuar con <b>simuladores científicos</b> en el buscador y a sintetizar documentos de miles de páginas con <b>NotebookLM</b>.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🔑</span> Lista de Conceptos Clave</h2>
+      <div class="concept-grid">
+        <div class="concept"><b>Gemini Live</b><span>Sistema de conversación en tiempo real por voz, vídeo y pantalla.</span></div>
+        <div class="concept"><b>Google AI Studio</b><span>Plataforma de desarrollo gratuita para acceder a los modelos más recientes como Gemini 3.8 Live.</span></div>
+        <div class="concept"><b>Comando @openstax</b><span>Atajo en Gemini para consultar libros de texto universitarios de la Universidad Rice.</span></div>
+        <div class="concept"><b>Google Stitch</b><span>Entorno para diseñar aplicaciones web didácticas a partir de lenguaje natural.</span></div>
+        <div class="concept"><b>NotebookLM</b><span>Cuaderno inteligente que genera reportes, podcasts, infografías y vídeos explicativos (Video Overview) a partir de fuentes del usuario.</span></div>
+        <div class="concept"><b>Vista Inmersiva 3D</b><span>Experiencia visual para explorar conceptos científicos a nivel molecular o astronómico.</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🚫</span> Errores que NUNCA deben cometerse</h2>
+      <div class="callout error"><span class="label">1 · Estudiar de forma pasiva</span>Limitarse a leer las respuestas de la IA sin responder a los test interactivos ni practicar la voz.</div>
+      <div class="callout error"><span class="label">2 · Pedir fuentes en español con @openstax cuando da error</span>Si la IA responde que no encuentra la URL, no te rindas; solicita el enlace en inglés para solucionarlo.</div>
+      <div class="callout error"><span class="label">3 · Subir documentos sin especificar objetivos</span>Al trabajar con PDFs de más de 1.000 páginas en NotebookLM, se recomienda usar prompts específicos para orientar los informes.</div>
+      <div class="callout error"><span class="label">4 · Usar buscadores tradicionales para simulación</span>En lugar de leer artículos estáticos sobre física o química, solicita un widget interactivo directamente en el buscador de Google.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">💡</span> Recomendaciones para Seguir Aprendiendo</h2>
+      <div class="step"><div class="n">1</div><div class="body"><b>Practica diariamente 15 minutos por voz</b><span>Utiliza Gemini Live en tu móvil o en AI Studio para explicar lo que aprendiste durante el día y recibir correcciones.</span></div></div>
+      <div class="step"><div class="n">2</div><div class="body"><b>Crea un cuaderno de estudio por asignatura</b><span>Centraliza PDFs, notas de clase y enlaces para generar mapas mentales y cuestionarios automáticos.</span></div></div>
+      <div class="step"><div class="n">3</div><div class="body"><b>Experimenta combinando herramientas</b><span>Diseña una interfaz en Google Stitch, impórtala a AI Studio y agrégale un tutor conversacional en directo.</span></div></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🧩</span> Ejercicios Prácticos con Soluciones</h2>
+      <details>
+        <summary>Ejercicio 1 · Asistencia Técnica en Vivo</summary>
+        <div>
+          <p><b>Consigna:</b> Necesitas aprender a retocar el tono de una foto en un editor web.</p>
+          <p><b>Solución explicada:</b> Abres Google AI Studio, seleccionas Gemini 3.8 Live, activas el modo compartir pantalla y preguntas: <i>"¿Qué menú debo abrir para ajustar el blanco y negro y qué función cumple cada deslizador?"</i> La IA te guiará visualmente al menú <code style="color:var(--cyan)">Image &gt; Adjustments &gt; Black &amp; White</code>.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Ejercicio 2 · Autoevaluación Académica</summary>
+        <div>
+          <p><b>Consigna:</b> Quieres comprobar cuánto sabes sobre el ciclo del agua a nivel universitario.</p>
+          <p><b>Solución explicada:</b> Escribes en Gemini: <i>@openstax Explícame las etapas del ciclo del agua y genérame un test de 5 preguntas con puntuación al final</i>. Respondes el test y revisas la retroalimentación.</p>
+        </div>
+      </details>
+      <div class="callout info"><span class="label">Nota</span>En la pestaña <b>Ejercicios</b> encontrarás 10 ejercicios completos con solución paso a paso, explicación causal, error típico a evitar y criterios de calidad.</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📖</span> Glosario de Términos Técnicos</h2>
+      <div class="concept-grid">
+        <div class="concept"><b>Ecosistema educativo de IA</b><span>Conjunto interconectado de herramientas impulsadas por inteligencia artificial enfocadas en el entendimiento profundo y el aprendizaje práctico.</span></div>
+        <div class="concept"><b>Multimodal</b><span>Capacidad de un modelo de IA para procesar y combinar simultáneamente diferentes tipos de datos: texto, imágenes, audio y vídeo.</span></div>
+        <div class="concept"><b>Latencia</b><span>El tiempo de retraso que tarda la IA en procesar tu entrada de voz o pantalla y emitir una respuesta en tiempo real.</span></div>
+        <div class="concept"><b>OpenStax</b><span>Proyecto educativo de la Universidad Rice de Houston que proporciona libros de texto de nivel universitario en formato abierto.</span></div>
+        <div class="concept"><b>VPN (Red Privada Virtual)</b><span>Herramienta de red que permite simular la ubicación geográfica de tu conexión a Internet para acceder a funciones regionales anticipadas.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROMPTS ============ -->
+  <section id="prompts" class="section">
+    <div class="card">
+      <h2><span class="icon">💬</span> Recopilación de Prompts Utilizados</h2>
+      <p>Estos son todos los prompts destacados del tutorial, listos para copiar y usar directamente en Gemini, AI Studio o el buscador.</p>
+
+      <div class="prompt-tag">PROMPT 1 · Investigación con OpenStax</div>
+      <div class="prompt">@openstax Explícame detalladamente las fases del sueño y qué le ocurre a la actividad cerebral en cada una. Al finalizar, hazme un cuestionario interactivo de 5 preguntas para evaluar lo aprendido y muéstrame mi puntuación con explicaciones.</div>
+
+      <div class="prompt-tag" style="margin-top:18px">PROMPT 2 · Creación de App Didáctica en AI Studio</div>
+      <div class="prompt">Actúa como un desarrollador web experto y docente. Toma este diseño de interfaz y código HTML del ciclo del agua y conviértelo en una aplicación web interactiva completamente funcional. Integra un modo de profesor por voz que pueda responder preguntas en tiempo real sobre cada etapa adaptado al nivel seleccionado.</div>
+
+      <div class="prompt-tag" style="margin-top:18px">PROMPT 3 · Widget de Escala de pH en Buscador</div>
+      <div class="prompt">Crea una escala de pH interactiva que muestre sustancias cotidianas como jugo de limón, jugo de naranja, café, agua pura y lejía. Permíteme interactuar modificando los valores de pH y poner a prueba mis conocimientos como un científico.</div>
+
+      <div class="prompt-tag" style="margin-top:18px">PROMPT 4 · Simulación Física de Tres Cuerpos</div>
+      <div class="prompt">Crea una simulación interactiva del problema de los tres cuerpos en el espacio donde pueda modificar la masa, la posición y la velocidad de cada uno de los tres cuerpos, permitiendo cambiar entre la vista 3D y la vista pitagórica.</div>
+    </div>
+  </section>
+
+  <!-- ============ EJERCICIOS ============ -->
+  <section id="ejercicios" class="section">
+
+    <div class="card">
+      <h2><span class="icon">🧩</span> Ejercicios del Tutorial · Aprender Haciendo</h2>
+      <p>Esta sección contiene <b>10 ejercicios</b> diseñados para consolidar todo lo aprendido en el tutorial. Cada ejercicio incluye su tipo, nivel de dificultad, enunciado, solución paso a paso, explicación causal, error típico a evitar y criterios de calidad.</p>
+      <p>Se recomienda resolver cada ejercicio <b>antes</b> de desplegar la solución. Usa los acordeones para autoevaluarte.</p>
+
+      <div class="meta-strip" style="margin-top:14px">
+        <span class="chip">🟢 3 Básicos</span>
+        <span class="chip">🟠 4 Intermedios</span>
+        <span class="chip">🔴 3 Avanzados</span>
+      </div>
+    </div>
+
+    <!-- Tabla resumen -->
+    <div class="card">
+      <h2><span class="icon">📊</span> Tabla Resumen de Ejercicios</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Nº</th><th>Tipo</th><th>Dificultad</th><th>Subtema(s) del tutorial</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Opción múltiple</td><td><span class="ex-tag basic">Básico</span></td><td>Introducción</td></tr>
+            <tr><td>2</td><td>Verdadero/Falso justificado</td><td><span class="ex-tag basic">Básico</span></td><td>Capítulo 1</td></tr>
+            <tr><td>3</td><td>Ordenamiento de pasos</td><td><span class="ex-tag basic">Básico</span></td><td>Capítulo 2</td></tr>
+            <tr><td>4</td><td>Emparejamiento</td><td><span class="ex-tag inter">Intermedio</span></td><td>Capítulos 5, 3, 4</td></tr>
+            <tr><td>5</td><td>Caso práctico</td><td><span class="ex-tag inter">Intermedio</span></td><td>Capítulo 1</td></tr>
+            <tr><td>6</td><td>Diagnóstico de error</td><td><span class="ex-tag inter">Intermedio</span></td><td>Capítulo 2</td></tr>
+            <tr><td>7</td><td>Diseño de prompt</td><td><span class="ex-tag inter">Intermedio</span></td><td>Capítulo 4</td></tr>
+            <tr><td>8</td><td>Comparación de herramientas</td><td><span class="ex-tag adv">Avanzado</span></td><td>Capítulos 5, 1, 3</td></tr>
+            <tr><td>9</td><td>Simulación de uso / Respuesta breve</td><td><span class="ex-tag adv">Avanzado</span></td><td>Capítulo 5</td></tr>
+            <tr><td>10</td><td>Caso integrador / Diseño de flujo</td><td><span class="ex-tag adv">Avanzado</span></td><td>Capítulos 3, 4, 5</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EJERCICIO 1 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">1</div>
+        <div class="ex-title">Objetivo fundamental del ecosistema Gemini</div>
+        <div class="ex-meta">
+          <span class="ex-tag basic">Básico</span>
+          <span class="ex-tag type">Opción múltiple</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Según el tutorial, ¿cuál es el objetivo fundamental del ecosistema Google Gemini para el aprendizaje?
+        <ul class="ex-options">
+          <li><b>A)</b> Almacenar información en la nube.</li>
+          <li><b>B)</b> Transformar datos brutos en una comprensión profunda que nunca se olvide.</li>
+          <li><b>C)</b> Sustituir por completo al docente.</li>
+          <li><b>D)</b> Vender cursos privados.</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución:</b> <span style="color:var(--green);font-weight:700">Opción B</span>. Leer la introducción. Identificar que el tutorial dice que el objetivo no es solo almacenar información, sino transformar los datos brutos en comprensión profunda.</p>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            El ecosistema busca que el aprendizaje sea significativo y duradero, no una simple acumulación de datos.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Creer que Gemini solo sirve como buscador o almacén de información.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Respuesta correcta B; justificación basada en la introducción; no confundir con otras herramientas.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 2 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">2</div>
+        <div class="ex-title">Captura de voz en Gemini Live</div>
+        <div class="ex-meta">
+          <span class="ex-tag basic">Básico</span>
+          <span class="ex-tag type">Verdadero / Falso justificado</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> En Gemini Live, para evitar el ruido de fondo y mejorar la captura de voz, el tutorial recomienda usar <b>altavoces externos sin micrófono</b>. Verdadero o falso. Justifica.
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución:</b> <span style="color:var(--red);font-weight:700">Falso</span>. El tutorial indica que un error común es dejar el micrófono abierto con ruido de fondo, y aconseja usar <b>auriculares con micrófono</b> para una captura de voz limpia.</p>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            Los auriculares con micrófono aíslan mejor la voz y reducen el ruido ambiental durante las llamadas en directo.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Confundir altavoces externos con auriculares con micrófono.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Indicar falso; mencionar auriculares con micrófono; no inventar otras recomendaciones.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 3 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">3</div>
+        <div class="ex-title">Ordenamiento · Estudio con @openstax</div>
+        <div class="ex-meta">
+          <span class="ex-tag basic">Básico</span>
+          <span class="ex-tag type">Ordenamiento de pasos</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Ordena correctamente los pasos para realizar un estudio riguroso con el comando <b>@openstax</b>:
+        <ul class="ex-options">
+          <li>( ) Responder el test interactivo.</li>
+          <li>( ) Escribir @openstax seguido de la consulta.</li>
+          <li>( ) Verificar los enlaces a las fuentes.</li>
+          <li>( ) Solicitar el tema y la autoevaluación.</li>
+          <li>( ) Revisar la calificación y fortalezas.</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Orden correcto:</b></p>
+          <div class="ex-flow">
+            <div class="ex-flow-item"><b>1</b>Escribir @openstax + consulta</div>
+            <div class="ex-flow-item"><b>2</b>Solicitar tema y autoevaluación</div>
+            <div class="ex-flow-item"><b>3</b>Responder el test interactivo</div>
+            <div class="ex-flow-item"><b>4</b>Revisar calificación y fortalezas</div>
+            <div class="ex-flow-item"><b>5</b>Verificar los enlaces a las fuentes</div>
+          </div>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            Primero se activa el comando, luego se pide el contenido y el test, después se responde, se revisa el resultado y finalmente se comprueban las fuentes.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Verificar enlaces antes de responder el test o pedir la autoevaluación antes de escribir @openstax.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Orden exacto según el capítulo 2; mención de @openstax al inicio; inclusión de los cinco pasos.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 4 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">4</div>
+        <div class="ex-title">Emparejamiento · Herramienta y función</div>
+        <div class="ex-meta">
+          <span class="ex-tag inter">Intermedio</span>
+          <span class="ex-tag type">Emparejamiento</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Empareja cada herramienta con su función principal según el tutorial.
+        <div class="cmp-grid" style="margin-top:10px">
+          <div class="cmp-card">
+            <div class="head" style="color:var(--cyan)">Herramientas</div>
+            <ul style="list-style:none;margin:0;padding:0;font-size:.85rem">
+              <li>1) Google AI Studio</li>
+              <li>2) NotebookLM</li>
+              <li>3) Google Stitch</li>
+              <li>4) Buscador Google (IA)</li>
+            </ul>
+          </div>
+          <div class="cmp-card">
+            <div class="head" style="color:var(--purple)">Funciones</div>
+            <ul style="list-style:none;margin:0;padding:0;font-size:.85rem">
+              <li>A) Análisis de documentos propios y fuentes masivas.</li>
+              <li>B) Prototipado y llamadas en vivo con Gemini 3.8 Live.</li>
+              <li>C) Búsqueda inteligente con widgets bajo demanda.</li>
+              <li>D) Generación de aplicaciones didácticas interactivas.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Emparejamiento correcto:</b> <b>1-B</b> · <b>2-A</b> · <b>3-D</b> · <b>4-C</b>.</p>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            La tabla comparativa del capítulo 5 asigna esas funciones principales a cada herramienta.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Asignar a NotebookLM la creación de apps web o a Stitch el análisis de documentos masivos.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Cuatro emparejamientos correctos; basados en la tabla del capítulo 5; sin inventar funciones.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 5 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">5</div>
+        <div class="ex-title">Caso práctico · Ajuste de foto con pantalla compartida</div>
+        <div class="ex-meta">
+          <span class="ex-tag inter">Intermedio</span>
+          <span class="ex-tag type">Caso práctico</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Un estudiante quiere aprender a ajustar una foto a blanco y negro en un editor web. En lugar de compartir pantalla, escribe: <i>"Explícame cómo editar esta foto en este programa"</i>. ¿Qué debería hacer según el tutorial?
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución:</b> Abrir <b>Google AI Studio</b>, seleccionar <b>Gemini 3.8 Live</b>, activar el modo <b>compartir pantalla</b> y preguntar en qué menú exacto debe hacer clic. Por ejemplo, para blanco y negro, la IA puede guiarlo al menú <code style="color:var(--cyan)">Image &gt; Adjustments &gt; Black &amp; White</code> y explicar cada deslizador.</p>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            Compartir pantalla permite que la IA actúe como tutor visual y dé instrucciones precisas sobre la interfaz.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Pedir una explicación genérica sin mostrar la pantalla ni el contexto exacto.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Mencionar AI Studio, Gemini 3.8 Live, compartir pantalla y pregunta específica; no limitarse a una respuesta teórica.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 6 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">6</div>
+        <div class="ex-title">Diagnóstico · Error al pedir enlaces con @openstax</div>
+        <div class="ex-meta">
+          <span class="ex-tag inter">Intermedio</span>
+          <span class="ex-tag type">Diagnóstico de error</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Un usuario escribe <b>@openstax</b> y pide <b>en español</b> los enlaces directos a los libros universitarios. La IA responde que no puede extraer la URL. ¿Cuál es el error y cómo se soluciona según el tutorial?
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución:</b> El error es solicitar los enlaces <b>en español</b>. La solución es pedir las fuentes o los enlaces directos utilizando el <b>idioma inglés</b>, lo que despliega las secciones exactas del libro universitario.</p>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            El tutorial indica que pedir enlaces en español puede generar respuestas donde la IA afirma no poder extraer la URL.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Rendirse o concluir que @openstax no funciona; probar en inglés.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Identificar el idioma como causa; proponer inglés como solución; no inventar otros comandos.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 7 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">7</div>
+        <div class="ex-title">Diseño de prompt · Widget de escala de pH</div>
+        <div class="ex-meta">
+          <span class="ex-tag inter">Intermedio</span>
+          <span class="ex-tag type">Diseño de prompt</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Diseña un prompt para que el buscador de Google genere un <b>widget interactivo de escala de pH</b>. Debe mostrar sustancias cotidianas, permitir modificar valores de pH y poner a prueba los conocimientos del usuario.
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución (ejemplo de prompt):</b></p>
+          <div class="prompt">Crea una escala de pH interactiva que muestre sustancias cotidianas como jugo de limón, jugo de naranja, café, agua pura y lejía. Permíteme modificar los valores de pH y poner a prueba mis conocimientos con retroalimentación inmediata.</div>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            El capítulo 4 indica que el buscador puede generar simulaciones y widgets didácticos a partir de prompts claros.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Pedir solo una imagen estática o un texto explicativo sin interacción.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Incluir sustancias cotidianas; permitir modificar pH; incluir evaluación o prueba de conocimientos; lenguaje claro.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 8 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">8</div>
+        <div class="ex-title">Comparación de herramientas · Tres casos</div>
+        <div class="ex-meta">
+          <span class="ex-tag adv">Avanzado</span>
+          <span class="ex-tag type">Comparación de herramientas</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Indica qué herramienta del ecosistema usarías para cada caso y justifica:
+        <ul class="ex-options">
+          <li><b>a)</b> Analizar la Constitución Española de más de 1.000 páginas y generar un vídeo explicativo vertical.</li>
+          <li><b>b)</b> Crear una aplicación interactiva del ciclo del agua con tutor de voz.</li>
+          <li><b>c)</b> Resolver una duda visual mientras se usa Photopea compartiendo pantalla.</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución:</b></p>
+          <p><b>a)</b> <b>NotebookLM</b>, porque analiza documentos masivos y genera reportes, podcasts, vídeos verticales, flashcards, etc.</p>
+          <p><b>b)</b> <b>Google Stitch</b> junto con <b>Google AI Studio</b>, porque permite diseñar aplicaciones didácticas y exportarlas a AI Studio para integrar un tutor conversacional.</p>
+          <p><b>c)</b> <b>Gemini Live en Google AI Studio</b>, porque permite voz, cámara y pantalla compartida en tiempo real.</p>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            Cada herramienta tiene una función principal según la tabla comparativa del capítulo 5 y los capítulos 1 y 3.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Usar el buscador tradicional para analizar un PDF masivo o usar NotebookLM para crear una app con tutor de voz.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Asignar correctamente las tres herramientas; justificar con funciones del tutorial; no mezclar herramientas sin relación.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 9 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">9</div>
+        <div class="ex-title">Simulación de uso · "Estudiar y aprender"</div>
+        <div class="ex-meta">
+          <span class="ex-tag adv">Avanzado</span>
+          <span class="ex-tag type">Respuesta breve</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Explica cómo usarías la opción <b>"Estudiar y aprender"</b> de Gemini Notebooks para aprender japonés básico en dos semanas.
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución:</b> En la sección de Notebooks de Gemini, seleccionar <b>"Estudiar y aprender"</b>. La IA te entrevistará sobre tu objetivo. Luego diseñará un plan prioritario, te evaluará con cuestionarios y actualizará tus fortalezas y debilidades dinámicamente.</p>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            El capítulo 5 describe ese módulo como un sistema que entrevista, planifica, evalúa y actualiza el progreso.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Usar la opción como un simple chat sin seguir el plan ni responder los cuestionarios.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Mencionar la entrevista inicial, el plan prioritario, los cuestionarios y la actualización de fortalezas y debilidades.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- EJERCICIO 10 -->
+    <div class="card">
+      <div class="ex-header">
+        <div class="ex-num">10</div>
+        <div class="ex-title">Caso integrador · Flujo con tres herramientas</div>
+        <div class="ex-meta">
+          <span class="ex-tag adv">Avanzado</span>
+          <span class="ex-tag type">Diseño de flujo</span>
+        </div>
+      </div>
+
+      <div class="ex-enunciado">
+        <b>Enunciado:</b> Un docente quiere crear una aplicación del ciclo del agua con test y glosario, y además analizar documentos extensos para preparar la clase. Diseña un <b>flujo de trabajo</b> usando al menos <b>tres herramientas</b> del ecosistema Google Gemini.
+      </div>
+
+      <details>
+        <summary>Ver solución paso a paso</summary>
+        <div>
+          <p><b>Solución (flujo):</b></p>
+          <div class="ex-flow">
+            <div class="ex-flow-item"><b>1. Stitch</b>Diseñar interfaz y mini-app del ciclo del agua con esquemas, experimentos y glosario.</div>
+            <div class="ex-flow-item"><b>2. AI Studio</b>Exportar con "Export &gt; Build with Google AI Studio" y aplicar prompt para convertir en app web funcional con tutor de voz, test y glosario.</div>
+            <div class="ex-flow-item"><b>3. NotebookLM</b>Cargar documentos extensos y generar reportes interactivos, infografías, flashcards, mapas mentales o vídeos explicativos.</div>
+          </div>
+          <div class="ex-block why">
+            <span class="label">Por qué</span>
+            Stitch permite diseñar, AI Studio construye y añade conversación, y NotebookLM gestiona documentos masivos y recursos de estudio.
+          </div>
+          <div class="ex-block err">
+            <span class="label">Error típico a evitar</span>
+            Intentar hacer todo en una sola herramienta o subir documentos sin especificar objetivos en NotebookLM.
+          </div>
+          <div class="ex-block qa">
+            <span class="label">Criterios de calidad</span>
+            Incluir Stitch, AI Studio y NotebookLM; mencionar exportación a AI Studio; integrar test, glosario y análisis documental; mantener coherencia con el tutorial.
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- Checklist final -->
+    <div class="card">
+      <h2><span class="icon">✅</span> Lista de Verificación de Calidad para el Generador</h2>
+      <ul class="checklist">
+        <li>Los 10 ejercicios se basan exclusivamente en la información del tutorial.</li>
+        <li>Cubren la introducción, los capítulos 1 a 5 y el cierre del tutorial.</li>
+        <li>Incluyen al menos 3 ejercicios básicos, 4 intermedios y 3 avanzados.</li>
+        <li>Usan tipos variados: opción múltiple, verdadero/falso, ordenamiento, emparejamiento, caso práctico, diagnóstico, diseño de prompt, comparación, simulación y flujo integrador.</li>
+        <li>Cada enunciado es claro y no ambiguo.</li>
+        <li>Cada ejercicio incluye solución paso a paso, explicación causal, error típico y criterios de calidad.</li>
+        <li>No se copian literalmente los ejemplos del tutorial; se transforman o cambian de contexto.</li>
+        <li>No se inventan herramientas, versiones, pasos ni características ajenas al tutorial.</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <!-- ============ FUENTES ============ -->
+  <section id="fuentes" class="section">
+    <div class="card">
+      <h2><span class="icon">📎</span> Fuentes y Enlaces</h2>
+
+      <div class="source-item">
+        <b>Adiós Tutoriales… Google te Regala un PROFESOR con IA GRATIS 🧑🏻‍🎓</b>
+        <span style="color:var(--muted); font-size:.84rem; display:block; margin-bottom:8px">Canal: Alejavi Rivera · YouTube</span>
+        <a href="https://youtube.com/watch?v=MDZoiwPl2QU&is=qX6FySnWHHTaEnGf" target="_blank" rel="noopener">https://youtube.com/watch?v=MDZoiwPl2QU&is=qX6FySnWHHTaEnGf</a>
+      </div>
+
+      <div class="source-item">
+        <b>FUENTES</b>
+        <span style="color:var(--muted); font-size:.84rem">Documento Markdown con referencias bibliográficas asociadas al contenido del tutorial.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CRÉDITOS ============ -->
+  <section id="creditos" class="section">
+    <div class="hero-wrap credits-hero" id="heroCredits"></div>
+
+    <div class="card credits-info">
+      <h2>Créditos</h2>
+      <div class="name">Rubén Sbarsky</div>
+
+      <div class="credits-dates">
+        <span>📅 <b>24/09/2026</b></span>
+        <span>🕒 <b>16:36:16</b></span>
+      </div>
+
+      <p class="edu">Este tutorial ha sido elaborado con fines exclusivamente educativos y de divulgación, con el objetivo de facilitar el aprendizaje del ecosistema Google Gemini aplicado a la enseñanza.</p>
+
+      <p class="latin-big">Fiat iustitia, ruat caelum.</p>
+    </div>
+  </section>
+
+</main>
+
+<button id="toTop" aria-label="Volver arriba">↑</button>
+
+<footer>
+  <div>📚 Tutorial solo con fines Educativos y Divulgación</div>
+  <div>👨‍💻 Créditos: Rubén Sbarsky</div>
+  <div>📅 FECHA: 24/09/2026</div>
+  <div>Hora: 16:36:16</div>
+  <div class="latin">Fiat iustitia, ruat caelum.</div>
+</footer>
+
+<!-- ==================== SVG TEMPLATE (reutilizable) ==================== -->
+<template id="heroTemplate">
+<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto;background:#070b14">
+  <defs>
+    <!-- Fondo gradiente animado -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070b14">
+        <animate attributeName="stop-color" values="#070b14;#0a1226;#0a0e1a;#070b14" dur="9s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#0a0e1a">
+        <animate attributeName="stop-color" values="#0a0e1a;#16224a;#0f172a;#0a0e1a" dur="11s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+
+    <!-- Rejilla pulsante -->
+    <pattern id="gridPat" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1e3a5f" stroke-width="0.6"/>
+      <animate attributeName="opacity" values="0.25;0.55;0.25" dur="6s" repeatCount="indefinite"/>
+    </pattern>
+
+    <!-- Halos radiales -->
+    <radialGradient id="coreGlow">
+      <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#00d4ff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="purpleGlow">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="greenGlow">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Filtros glow -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowBig" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Paths de conexión (para animateMotion) -->
+    <path id="pathP1" d="M 400 220 Q 265 120 155 105" fill="none"/>
+    <path id="pathP2" d="M 400 220 Q 535 120 645 105" fill="none"/>
+    <path id="pathP3" d="M 400 220 Q 265 340 155 355" fill="none"/>
+    <path id="pathP4" d="M 400 220 Q 535 340 645 355" fill="none"/>
+    <path id="pathP5" d="M 400 220 L 400 385" fill="none"/>
+    <path id="pathRing" d="M 400 220 m -120 0 a 120 120 0 1 1 240 0 a 120 120 0 1 1 -240 0" fill="none"/>
+  </defs>
+
+  <!-- FONDO -->
+  <rect width="800" height="450" fill="url(#bgGrad)"/>
+  <rect width="800" height="450" fill="url(#gridPat)"/>
+
+  <!-- Rejilla de puntos adicional pulsante -->
+  <g opacity="0.35">
+    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="7s" repeatCount="indefinite"/>
+    <circle cx="100" cy="80" r="1.5" fill="#00d4ff"/>
+    <circle cx="700" cy="80" r="1.5" fill="#22c55e"/>
+    <circle cx="100" cy="380" r="1.5" fill="#a855f7"/>
+    <circle cx="700" cy="380" r="1.5" fill="#f59e0b"/>
+    <circle cx="400" cy="40" r="1.5" fill="#ef4444"/>
+  </g>
+
+  <!-- ANILLOS ORBITALES -->
+  <g filter="url(#glow)">
+    <circle cx="400" cy="220" r="155" fill="none" stroke="#22c55e" stroke-width="0.9" stroke-dasharray="10 14" opacity="0.4">
+      <animateTransform attributeName="transform" type="rotate" from="0 400 220" to="360 400 220" dur="32s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="10 14;18 10;10 14" dur="7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="220" r="120" fill="none" stroke="#00d4ff" stroke-width="1.1" stroke-dasharray="6 10" opacity="0.6">
+      <animateTransform attributeName="transform" type="rotate" from="360 400 220" to="0 400 220" dur="22s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="6 10;14 8;6 10" dur="5.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="220" r="85" fill="none" stroke="#a855f7" stroke-width="1.2" stroke-dasharray="3 7" opacity="0.7">
+      <animateTransform attributeName="transform" type="rotate" from="0 400 220" to="360 400 220" dur="14s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="3 7;9 5;3 7" dur="4.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- PARTÍCULAS ORBITANDO EL NÚCLEO -->
+  <g>
+    <circle r="3" fill="#00d4ff" filter="url(#glow)">
+      <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#pathRing"/>
+      </animateMotion>
+    </circle>
+    <circle r="2.5" fill="#a855f7" filter="url(#glow)">
+      <animateMotion dur="11s" repeatCount="indefinite" rotate="auto" begin="-3s">
+        <mpath href="#pathRing"/>
+      </animateMotion>
+    </circle>
+    <circle r="2" fill="#22c55e" filter="url(#glow)">
+      <animateMotion dur="6.5s" repeatCount="indefinite" rotate="auto" begin="-1.5s">
+        <mpath href="#pathRing"/>
+      </animateMotion>
+    </circle>
+  </g>
+
+  <!-- PATH FLOW: procesos hacia cada nodo -->
+  <g stroke-width="1.4" fill="none" opacity="0.75">
+    <use href="#pathP1" stroke="#00d4ff" stroke-dasharray="7 8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="2.2s" repeatCount="indefinite"/>
+    </use>
+    <use href="#pathP2" stroke="#22c55e" stroke-dasharray="7 8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="2.6s" repeatCount="indefinite"/>
+    </use>
+    <use href="#pathP3" stroke="#a855f7" stroke-dasharray="7 8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="2.9s" repeatCount="indefinite"/>
+    </use>
+    <use href="#pathP4" stroke="#f59e0b" stroke-dasharray="7 8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="3.3s" repeatCount="indefinite"/>
+    </use>
+    <use href="#pathP5" stroke="#ef4444" stroke-dasharray="7 8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="3.7s" repeatCount="indefinite"/>
+    </use>
+  </g>
+
+  <!-- PARTÍCULAS VIAJERAS por cada path -->
+  <g filter="url(#glow)">
+    <circle r="3" fill="#00d4ff">
+      <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#pathP1"/></animateMotion>
+    </circle>
+    <circle r="2.5" fill="#7dd3fc">
+      <animateMotion dur="2.4s" repeatCount="indefinite" begin="-1.2s"><mpath href="#pathP1"/></animateMotion>
+    </circle>
+    <circle r="3" fill="#22c55e">
+      <animateMotion dur="2.8s" repeatCount="indefinite" begin="-0.6s"><mpath href="#pathP2"/></animateMotion>
+    </circle>
+    <circle r="3" fill="#a855f7">
+      <animateMotion dur="3.1s" repeatCount="indefinite" begin="-0.4s"><mpath href="#pathP3"/></animateMotion>
+    </circle>
+    <circle r="3" fill="#f59e0b">
+      <animateMotion dur="3.4s" repeatCount="indefinite" begin="-1s"><mpath href="#pathP4"/></animateMotion>
+    </circle>
+    <circle r="3" fill="#ef4444">
+      <animateMotion dur="3.8s" repeatCount="indefinite" begin="-1.6s"><mpath href="#pathP5"/></animateMotion>
+    </circle>
+  </g>
+
+  <!-- GHOST ELEMENTS: piezas fantasma que recorren el path -->
+  <g opacity="0.55" filter="url(#glow)">
+    <circle r="6" fill="none" stroke="#00d4ff" stroke-width="1.5">
+      <animateMotion dur="5s" repeatCount="indefinite"><mpath href="#pathP1"/></animateMotion>
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="6" fill="none" stroke="#22c55e" stroke-width="1.5">
+      <animateMotion dur="5.6s" repeatCount="indefinite" begin="-2s"><mpath href="#pathP2"/></animateMotion>
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="5.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="6" fill="none" stroke="#a855f7" stroke-width="1.5">
+      <animateMotion dur="6.2s" repeatCount="indefinite" begin="-3s"><mpath href="#pathP3"/></animateMotion>
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="6.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="6" fill="none" stroke="#f59e0b" stroke-width="1.5">
+      <animateMotion dur="6.8s" repeatCount="indefinite" begin="-1s"><mpath href="#pathP4"/></animateMotion>
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="6.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle r="6" fill="none" stroke="#ef4444" stroke-width="1.5">
+      <animateMotion dur="7.2s" repeatCount="indefinite" begin="-2.4s"><mpath href="#pathP5"/></animateMotion>
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="7.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- NÚCLEO CENTRAL: GEMINI -->
+  <g filter="url(#glowBig)">
+    <circle cx="400" cy="220" r="60" fill="url(#coreGlow)" opacity="0.7">
+      <animate attributeName="r" values="60;72;60" dur="4.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.55;0.85;0.55" dur="4.5s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Hexágono central -->
+    <polygon points="400,180 435,200 435,240 400,260 365,240 365,200" fill="#0b1626" stroke="#00d4ff" stroke-width="1.8">
+      <animate attributeName="stroke" values="#00d4ff;#a855f7;#22c55e;#00d4ff" dur="8s" repeatCount="indefinite"/>
+    </polygon>
+    <!-- Anillo interior del núcleo -->
+    <circle cx="400" cy="220" r="28" fill="none" stroke="#00d4ff" stroke-width="0.8" stroke-dasharray="3 5" opacity="0.8">
+      <animateTransform attributeName="transform" type="rotate" from="0 400 220" to="360 400 220" dur="9s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Pulso interior -->
+    <circle cx="400" cy="220" r="18" fill="none" stroke="#00d4ff" stroke-width="1">
+      <animate attributeName="r" values="14;26;14" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0;0.9" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <text x="400" y="225" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="13" font-weight="800" fill="#e2e8f0" letter-spacing="1.5">GEMINI</text>
+  </g>
+
+  <!-- NODO 1: AI STUDIO (arriba izquierda) -->
+  <g>
+    <circle cx="155" cy="105" r="30" fill="url(#coreGlow)" opacity="0.6">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="155" cy="105" r="22" fill="#0b1626" stroke="#00d4ff" stroke-width="1.6" filter="url(#glow)">
+      <animate attributeName="stroke-width" values="1.4;2.4;1.4" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="155" cy="105" r="22" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.6">
+      <animate attributeName="r" values="22;36;22" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0;0.7" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <g transform="translate(155 105)">
+      <animateTransform attributeName="transform" type="translate" values="155 105;155 103;155 105" dur="3.3s" repeatCount="indefinite" additive="replace"/>
+    </g>
+    <text x="155" y="110" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="15" font-weight="800" fill="#00d4ff">AI</text>
+    <text x="155" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#94a3b8" letter-spacing="1">AI STUDIO</text>
+  </g>
+
+  <!-- NODO 2: OPENSTAX (arriba derecha) -->
+  <g>
+    <circle cx="645" cy="105" r="30" fill="url(#greenGlow)" opacity="0.6">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="645" cy="105" r="22" fill="#0b1626" stroke="#22c55e" stroke-width="1.6" filter="url(#glow)">
+      <animate attributeName="stroke-width" values="1.4;2.4;1.4" dur="3.4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="645" cy="105" r="22" fill="none" stroke="#22c55e" stroke-width="1" opacity="0.6">
+      <animate attributeName="r" values="22;36;22" dur="4.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0;0.7" dur="4.4s" repeatCount="indefinite"/>
+    </circle>
+    <text x="645" y="110" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="15" font-weight="800" fill="#22c55e">@</text>
+    <text x="645" y="150" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#94a3b8" letter-spacing="1">OPENSTAX</text>
+  </g>
+
+  <!-- NODO 3: STITCH (abajo izquierda) -->
+  <g>
+    <circle cx="155" cy="355" r="30" fill="url(#purpleGlow)" opacity="0.6">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="4.1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="155" cy="355" r="22" fill="#0b1626" stroke="#a855f7" stroke-width="1.6" filter="url(#glow)">
+      <animate attributeName="stroke-width" values="1.4;2.4;1.4" dur="3.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="155" cy="355" r="22" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.6">
+      <animate attributeName="r" values="22;36;22" dur="4.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0;0.7" dur="4.8s" repeatCount="indefinite"/>
+    </circle>
+    <text x="155" y="360" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="800" fill="#a855f7">⚙</text>
+    <text x="155" y="400" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#94a3b8" letter-spacing="1">STITCH</text>
+  </g>
+
+  <!-- NODO 4: NOTEBOOK (abajo derecha) -->
+  <g>
+    <circle cx="645" cy="355" r="30" fill="#f59e0b" opacity="0.28">
+      <animate attributeName="opacity" values="0.15;0.4;0.15" dur="4.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="645" cy="355" r="22" fill="#0b1626" stroke="#f59e0b" stroke-width="1.6" filter="url(#glow)">
+      <animate attributeName="stroke-width" values="1.4;2.4;1.4" dur="4.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="645" cy="355" r="22" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.6">
+      <animate attributeName="r" values="22;36;22" dur="5.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0;0.7" dur="5.2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="645" y="360" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="800" fill="#f59e0b">📖</text>
+    <text x="645" y="400" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#94a3b8" letter-spacing="1">NOTEBOOKLM</text>
+  </g>
+
+  <!-- NODO 5: SEARCH (abajo centro) -->
+  <g>
+    <circle cx="400" cy="385" r="30" fill="#ef4444" opacity="0.25">
+      <animate attributeName="opacity" values="0.12;0.35;0.12" dur="3.9s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="385" r="20" fill="#0b1626" stroke="#ef4444" stroke-width="1.6" filter="url(#glow)">
+      <animate attributeName="stroke-width" values="1.4;2.4;1.4" dur="3.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="385" r="20" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.6">
+      <animate attributeName="r" values="20;34;20" dur="4.3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0;0.7" dur="4.3s" repeatCount="indefinite"/>
+    </circle>
+    <text x="400" y="390" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="13" font-weight="800" fill="#ef4444">🔍</text>
+  </g>
+
+  <!-- BURST / EXPLOSIONES RADIALES -->
+  <g filter="url(#glow)">
+    <g transform="translate(400 220)">
+      <line x1="0" y1="0" x2="80" y2="0" stroke="#00d4ff" stroke-width="1.2" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="5s" repeatCount="indefinite" begin="0s"/>
+      </line>
+      <line x1="0" y1="0" x2="0" y2="-80" stroke="#00d4ff" stroke-width="1.2" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="5s" repeatCount="indefinite" begin="0.3s"/>
+      </line>
+      <line x1="0" y1="0" x2="-80" y2="0" stroke="#00d4ff" stroke-width="1.2" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="5s" repeatCount="indefinite" begin="0.6s"/>
+      </line>
+      <line x1="0" y1="0" x2="0" y2="80" stroke="#00d4ff" stroke-width="1.2" opacity="0">
+        <animate attributeName="opacity" values="0;0.9;0" dur="5s" repeatCount="indefinite" begin="0.9s"/>
+      </line>
+      <line x1="0" y1="0" x2="55" y2="-55" stroke="#a855f7" stroke-width="1" opacity="0">
+        <animate attributeName="opacity" values="0;0.85;0" dur="5.5s" repeatCount="indefinite" begin="1.2s"/>
+      </line>
+      <line x1="0" y1="0" x2="-55" y2="55" stroke="#a855f7" stroke-width="1" opacity="0">
+        <animate attributeName="opacity" values="0;0.85;0" dur="5.5s" repeatCount="indefinite" begin="1.5s"/>
+      </line>
+      <line x1="0" y1="0" x2="55" y2="55" stroke="#22c55e" stroke-width="1" opacity="0">
+        <animate attributeName="opacity" values="0;0.85;0" dur="5.5s" repeatCount="indefinite" begin="1.8s"/>
+      </line>
+      <line x1="0" y1="0" x2="-55" y2="-55" stroke="#22c55e" stroke-width="1" opacity="0">
+        <animate attributeName="opacity" values="0;0.85;0" dur="5.5s" repeatCount="indefinite" begin="2.1s"/>
+      </line>
+    </g>
+  </g>
+
+  <!-- INDICADOR LIVE (esquina) -->
+  <g transform="translate(720 24)">
+    <circle r="5" fill="#ef4444" filter="url(#glow)">
+      <animate attributeName="opacity" values="1;0.2;1" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="5;7;5" dur="1.4s" repeatCount="indefinite"/>
+    </circle>
+    <text x="14" y="4" font-family="Segoe UI, sans-serif" font-size="11" font-weight="800" fill="#ef4444" letter-spacing="2">LIVE</text>
+  </g>
+
+  <!-- ETIQUETA DE ESTADO arriba izquierda -->
+  <g transform="translate(24 24)">
+    <rect x="0" y="0" width="128" height="22" rx="11" fill="#0f172a" stroke="#1e3a5f" stroke-width="1"/>
+    <circle cx="14" cy="11" r="3.5" fill="#22c55e" filter="url(#glow)">
+      <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="26" y="15" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#94a3b8" letter-spacing="1.2">
+      <animate attributeName="fill" values="#94a3b8;#00d4ff;#94a3b8" dur="4s" repeatCount="indefinite"/>
+      ECOSISTEMA ACTIVO
+    </text>
+  </g>
+
+  <!-- TÍTULO principal animado -->
+  <g>
+    <text x="400" y="60" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="24" font-weight="900" letter-spacing="4" fill="#e2e8f0">
+      <animate attributeName="fill" values="#e2e8f0;#00d4ff;#a855f7;#22c55e;#e2e8f0" dur="8s" repeatCount="indefinite"/>
+      ECOSISTEMA GEMINI
+    </text>
+    <text x="400" y="80" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="600" fill="#94a3b8" letter-spacing="3" opacity="0.9">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="3.2s" repeatCount="indefinite"/>
+      APRENDIZAJE · IA · TIEMPO REAL
+    </text>
+  </g>
+
+  <!-- TEXTO CLÍMAX pulsante -->
+  <g transform="translate(400 300)">
+    <text x="0" y="0" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" font-weight="900" fill="#00d4ff" letter-spacing="6" filter="url(#glow)">
+      <animate attributeName="fill" values="#00d4ff;#a855f7;#22c55e;#f59e0b;#00d4ff" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2.4s" repeatCount="indefinite"/>
+      ⚡ FLUJO DE CONOCIMIENTO ⚡
+    </text>
+  </g>
+
+  <!-- FIRMA AUTOR -->
+  <text x="400" y="440" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="700" fill="#a855f7" letter-spacing="3" opacity="0.7">
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="5s" repeatCount="indefinite"/>
+    RUBÉN SBARSKY · TUTORIAL EDUCATIVO
+  </text>
+</svg>
+</template>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- CLONAR SVG EN HOME Y CRÉDITOS ---------- */
+  var tpl = document.getElementById('heroTemplate');
+  var heroHome = document.getElementById('heroHome');
+  var heroCredits = document.getElementById('heroCredits');
+
+  function cloneHero(container){
+    if(!container || !tpl) return;
+    container.innerHTML = '';
+    var node = tpl.content.firstElementChild.cloneNode(true);
+    container.appendChild(node);
+    return node;
+  }
+
+  var svgHome = cloneHero(heroHome);
+  var svgCredits = cloneHero(heroCredits);
+
+  /* ---------- NAVEGACIÓN SPA ---------- */
+  var navBtns = document.querySelectorAll('.nav-btn');
+  var sections = document.querySelectorAll('.section');
+
+  function showSection(id){
+    sections.forEach(function(s){
+      s.classList.toggle('active', s.id === id);
+    });
+    navBtns.forEach(function(b){
+      b.classList.toggle('active', b.dataset.target === id);
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+
+    // Reiniciar animación del SVG en créditos
+    if(id === 'creditos'){
+      var svg = heroCredits.querySelector('svg');
+      if(svg){
+        try{
+          if(typeof svg.setCurrentTime === 'function') svg.setCurrentTime(0);
+          if(typeof svg.unpauseAnimations === 'function') svg.unpauseAnimations();
+        }catch(e){}
+      }
+    }
+  }
+
+  navBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      showSection(btn.dataset.target);
+    });
+  });
+
+  /* ---------- PROGRESS BAR ---------- */
+  var progress = document.getElementById('progress');
+  function updateProgress(){
+    var h = document.documentElement;
+    var scrolled = (h.scrollTop || document.body.scrollTop);
+    var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    var pct = height > 0 ? (scrolled / height) * 100 : 0;
+    progress.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, {passive:true});
+  updateProgress();
+
+  /* ---------- BOTONES COPIAR PROMPTS ---------- */
+  function copyTextFallback(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    ta.style.pointerEvents = 'none';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyPrompt(prompt, button){
+    var clone = prompt.cloneNode(true);
+    var copyButton = clone.querySelector('.prompt-copy');
+    if(copyButton) copyButton.remove();
+    var text = clone.innerText.trim();
+    var done = function(){
+      button.textContent = '✓ Copiado';
+      button.classList.add('copied');
+      window.setTimeout(function(){
+        button.textContent = 'Copiar';
+        button.classList.remove('copied');
+      }, 1600);
+    };
+    var failed = function(){
+      button.textContent = 'No se pudo copiar';
+      window.setTimeout(function(){ button.textContent = 'Copiar'; }, 1800);
+    };
+
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(done).catch(function(){
+        if(copyTextFallback(text)) done(); else failed();
+      });
+    }else{
+      if(copyTextFallback(text)) done(); else failed();
+    }
+  }
+
+  document.querySelectorAll('.prompt').forEach(function(prompt){
+    prompt.classList.add('has-copy');
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'prompt-copy';
+    button.textContent = 'Copiar';
+    button.setAttribute('aria-label', 'Copiar prompt al portapapeles');
+    button.addEventListener('click', function(){
+      copyPrompt(prompt, button);
+    });
+    prompt.appendChild(button);
+  });
+
+  /* ---------- BACK TO TOP ---------- */
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function(){
+    toTop.classList.toggle('show', window.scrollY > 400);
+  }, {passive:true});
+  toTop.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+})();
+</script>
+
+</body>
+</html>
